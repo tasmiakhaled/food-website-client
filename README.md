@@ -1,4 +1,4 @@
-## Food Ordering App
+## food-website-client
 
 ### Features:
 
@@ -34,13 +34,9 @@
 9. React Redux 
 10. Redux-Thunk 
 11. TensorFlow.js 
-12. GraphQL 
 13. Firebase Authentication 
 14. GSAP 
-15. RESTful API 
-16. MongoDB 
-17. Node JS 
-18. Express JS
+15. RESTful API
 
 ### How to start?
 
