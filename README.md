@@ -9,22 +9,38 @@
 - Add to cart functionality
 - Shopping cart functionality
 - Product Filtering functionality
+- Rating, reviews, like and dislike functionality
 - Product page
 - Cart and checkout page
 - Contact page
 - Login and Register page
 - Awesome modern minimalist UI
+- Machine Learning Implemented (Food Detection)
+- Unique username and email address
+- Regex on email address and password
 
 ### Technologies Used:
 
 ---
 
-1. React.js
-2. Redux Toolkit
-3. ReactStrap
-4. React Router Dom
-5. Firebase Authentication
-6. CSS
+1. HTML5 
+2. CSS3
+3. SASS 
+4. JavaScript 
+5. React JS 
+6. Bootstrap 
+7. Reactstrap 
+8. Redux 
+9. React Redux 
+10. Redux-Thunk 
+11. TensorFlow.js 
+12. GraphQL 
+13. Firebase Authentication 
+14. GSAP 
+15. RESTful API 
+16. MongoDB 
+17. Node JS 
+18. Express JS
 
 ### How to start?
 
