@@ -9,6 +9,7 @@
 - Add to cart functionality
 - Shopping cart functionality
 - Product Filtering functionality
+- Product Search Optimization Functionality
 - Rating, reviews, like and dislike functionality
 - Product page
 - Cart and checkout page

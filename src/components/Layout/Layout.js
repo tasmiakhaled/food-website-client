@@ -16,7 +16,7 @@ const Layout = () => {
     console.log("d d handled", state)
   }
   return (
-    <div>
+    <div style={{backgroundColor: "#FFE5B4"}}>
       <Header
         dropdown={dropdown}
         setDropdown={setDropdown}
