@@ -1,97 +1,133 @@
-import React, { useState } from 'react';
-import '../styles/detection.scss';
+import React, { useEffect, useRef, useState } from 'react';
 import * as tmImage from '@teachablemachine/image';
 
-const Detection = () => {
-    const URL = "https://teachablemachine.withgoogle.com/models/dBPUzWgbV/";
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [predictionResult, setPredictionResult] = useState(null);
-    const [modelLoaded, setModelLoaded] = useState(false);
+function Detection() {
+    const modelRef = useRef(null);
+    const labelContainerRef = useRef(null);
+    const inputRef = useRef(null);
+    const [isModelLoaded, setIsModelLoaded] = useState(false);
+    const [imageURL, setImageURL] = useState(null);
+    const [showDetectButton, setShowDetectButton] = useState(false);
 
-    let model, webcam, labelContainer, maxPredictions;
+    useEffect(() => {
+        init();
+    }, []);
 
-    async function init() {
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
-        setModelLoaded(true);
-    }
+    const init = async () => {
+        const URL = 'https://teachablemachine.withgoogle.com/models/dBPUzWgbV/';
+        const modelURL = URL + 'model.json';
+        const metadataURL = URL + 'metadata.json';
 
-    async function predict(image) {
-        if (!modelLoaded) {
-            await init();
-        }
-        // predict can take in an image, video or canvas html element
-        const prediction = await model.predict(image);
-        const results = [];
-        for (let i = 0; i < maxPredictions; i++) {
-            results.push({
-                className: prediction[i].className,
-                probability: prediction[i].probability.toFixed(2)
-            });
-        }
-        return results;
-    }
-
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const image = await loadSelectedImage(file);
-            setSelectedImage(image);
-            const result = await predict(image);
-            setPredictionResult(result);
+        try {
+            modelRef.current = await tmImage.load(modelURL, metadataURL);
+            setIsModelLoaded(true);
+        } catch (error) {
+            console.error('Error loading model:', error);
         }
     };
 
-    const loadSelectedImage = async (file) => {
-        return new Promise((resolve, reject) => {
+    const loadImage = (event) => {
+        const input = event.target;
+        if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = reject;
-                img.src = event.target.result;
+
+            reader.onload = function (e) {
+                setImageURL(e.target.result);
+                setShowDetectButton(true);
+
+                // Clear previous prediction results when a new image is uploaded
+                clearLabelContainer();
             };
-            reader.readAsDataURL(file);
-        });
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    // Helper function to clear child nodes of labelContainerRef
+    const clearLabelContainer = () => {
+        const labelContainer = labelContainerRef.current;
+        while (labelContainer.firstChild) {
+            labelContainer.removeChild(labelContainer.firstChild);
+        }
+    };
+
+    const detect = () => {
+        if (isModelLoaded) {
+            const img = new Image();
+            img.src = imageURL;
+
+            img.onload = function () {
+                predict(img);
+            };
+        } else {
+            console.warn('Model is not loaded yet.');
+        }
+    };
+
+    const predict = async (image) => {
+        const predictions = await modelRef.current.predict(image);
+
+        if (labelContainerRef.current) {
+            // Clear previous predictions
+            clearLabelContainer();
+
+            // Append predictions to labelContainerRef
+            predictions.forEach((prediction) => {
+                const predictionElement = document.createElement('div');
+                predictionElement.innerText = `${prediction.className}: ${prediction.probability.toFixed(2)}`;
+                labelContainerRef.current.appendChild(predictionElement);
+            });
+        }
     };
 
     return (
-        <>
-            <div className='text-center'>
-                <h3>Click to detect food</h3>
-                <div className="d-flex justify-content-evenly">
+        <div className='text-center'>
+            <h3>Click to Detect Food</h3>
+            <div className="d-flex justify-content-center">
+                <div className="input-group mb-3 w-25 d-flex justify-content-center">
+                    <label className="input-group-text" htmlFor="inputGroupFile02">
+                        Upload
+                    </label>
                     <input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={loadImage}
+                        ref={inputRef}
+                        style={{ display: 'none' }} // Hide the input element
+                        id="inputGroupFile02"
                     />
-                    <button className="custom-button mb-3" type="button" onClick={init}>
-                        Open Camera
+                    <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => inputRef.current.click()} // Trigger the input click when button is clicked
+                    >
+                        Choose File
                     </button>
                 </div>
-                {selectedImage && (
-                    <div>
-                        <img src={selectedImage.src} alt="Uploaded" />
-                        {predictionResult && (
-                            <ul>
-                                {predictionResult.map((result, index) => (
-                                    <li key={index}>
-                                        {result.className}: {result.probability}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
             </div>
-            <div className='d-flex justify-content-center'>
-                <div id="webcam-container" style={{ marginRight: '10px' }}></div>
-                <div id="label-container"></div>
+            <div className="row justify-content-center">
+                <div className="col-4">
+                    {imageURL && (
+                        <div style={{ marginBottom: '20px' }}>
+                            <img src={imageURL} style={{ width: '300px' }} alt="Uploaded" />
+                        </div>
+                    )}
+                    {showDetectButton && (
+                        <button type="button" className="btn btn-danger" onClick={detect} style={{ marginBottom: '20px' }}>
+                            Detect
+                        </button>
+                    )}
+                </div>
+                <div className="col-4">
+                    <div
+                        id="label-container"
+                        ref={labelContainerRef}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+                    ></div>
+                </div>
             </div>
-        </>
-    )
+        </div>
+    );
 }
 
 export default Detection;
